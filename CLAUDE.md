@@ -1,0 +1,49 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+Jejact turns Strava activities into transparent PNG stickers for Instagram Stories. See `brief.md` for the original product brief. The architecture deliberately deviates from the brief's NestJS/Prisma stack: it is a **single Next.js app with no database**, designed to deploy straight to Vercel.
+
+## Commands
+
+```sh
+pnpm dev            # dev server at http://localhost:3000 (turbo → apps/web)
+pnpm build          # production build of everything
+pnpm lint           # eslint across all workspaces (max-warnings 0)
+pnpm check-types    # tsc --noEmit across all workspaces (web runs `next typegen` first)
+```
+
+There is no test suite. Requires a root `.env` (copy `.env.example`) with `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `SESSION_SECRET`; `apps/web/next.config.js` loads the root `.env` via `process.loadEnvFile`.
+
+## Architecture
+
+Turborepo + pnpm workspace. Shared packages export **TypeScript source directly** (`"exports": { ".": "./src/index.ts" }`, no build step); `next.config.js` lists them in `transpilePackages`.
+
+- `apps/web` — the entire app (Next.js 16 App Router, Tailwind CSS v4).
+- `packages/sticker-engine` — the core domain: template JSON model (`template.ts`), stat formatters (`format.ts`), a hand-rolled Canvas 2D renderer (`render.ts`, browser-only), built-in templates (`templates.ts`), PNG export/copy/share helpers (`export.ts`). No Konva — templates are absolutely positioned, with `statFlow` elements that reflow around whichever stats the user toggles on.
+- `packages/types` — DTOs shared between route handlers and client (`ActivityDto`, `SessionUser`, `StatField`).
+- `packages/validation` — Zod schemas for Strava API responses.
+- `packages/ui`, `eslint-config`, `typescript-config` — starter leftovers/config; app components live in `apps/web/components`, not `@repo/ui`.
+
+### Stateless auth (the key design decision)
+
+There is **no server-side storage**. `apps/web/lib/server/`:
+
+- `session.ts` — Strava access/refresh tokens + athlete profile are sealed into an httpOnly cookie (`jejact_session`). `getSession()` transparently refreshes the Strava token when it expires within 5 minutes and rewrites the cookie (only legal in Route Handlers — don't call it from Server Components that render).
+- `crypto.ts` — AES-256-GCM seal/unseal keyed off `SESSION_SECRET`.
+- `strava.ts` — Strava OAuth + API calls; `toActivityDto` normalizes snake_case Strava payloads. Activity ids are Strava ids (stringified), used directly in routes like `/studio/[id]`.
+- OAuth callback redirect URI derives from the request origin (works on localhost and Vercel previews); `APP_URL` env optionally overrides it.
+
+API routes under `app/api/` return `ApiErrorBody` JSON on failure; the client wrapper (`lib/api.ts`) throws `ApiError`, and pages redirect to `/` on 401. Calories only exist on the detailed activity endpoint (`GET /api/activities/[id]`), not the list.
+
+### Rendering flow
+
+Pages are client components that fetch via `lib/api.ts`. `components/sticker-canvas.tsx` renders at full export resolution (1080-class) and CSS-scales down; it reads the page's computed `font-family` so canvas text matches the UI font (Geist, loaded via `next/font/local`), and re-renders after `document.fonts.ready`. Export = `canvas.toBlob` → copy uses a promise-valued `ClipboardItem` (required for Safari).
+
+## Conventions
+
+- Design tokens are CSS custom properties in `app/globals.css` mapped through Tailwind v4 `@theme inline` (`bg-canvas`, `text-ink`, `text-ink-secondary`, `bg-accent`, `border-hairline`...). Dark mode flips via `prefers-color-scheme` on the same variables — style with semantic tokens, not raw colors or `dark:` variants.
+- UI is deliberately Apple-ish and minimal (rounded-3xl, glass header, one accent color). Avoid heavy gradients, card grids, and generic SaaS dashboard patterns — see the UI/UX section of `brief.md`.
+- Strava tokens must never reach the client; anything importing `lib/server/*` stays server-side (enforced by `server-only`).

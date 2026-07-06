@@ -1,6 +1,13 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "NODE_ENV",
+    "STRAVA_CLIENT_ID",
+    "STRAVA_CLIENT_SECRET",
+    "SESSION_SECRET",
+    "APP_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
