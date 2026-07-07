@@ -6,12 +6,14 @@ import type { SessionUser } from "@repo/types";
 import { api, ApiError } from "../../lib/api";
 import { SiteHeader } from "../../components/site-header";
 import { Button } from "../../components/ui/button";
+import { ConfirmDialog } from "../../components/ui/confirm-dialog";
 import { Skeleton } from "../../components/ui/skeleton";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   useEffect(() => {
     api
@@ -35,19 +37,13 @@ export default function SettingsPage() {
   };
 
   const handleDisconnect = async () => {
-    if (
-      !window.confirm(
-        "Disconnect Strava? This revokes Jejact's access and signs you out.",
-      )
-    ) {
-      return;
-    }
     setBusy(true);
     try {
       await api.disconnectStrava();
       router.replace("/");
     } finally {
       setBusy(false);
+      setConfirmDisconnect(false);
     }
   };
 
@@ -118,7 +114,7 @@ export default function SettingsPage() {
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => void handleDisconnect()}
+                  onClick={() => setConfirmDisconnect(true)}
                   disabled={busy}
                 >
                   Disconnect Strava
@@ -128,6 +124,16 @@ export default function SettingsPage() {
           </div>
         )}
       </main>
+
+      <ConfirmDialog
+        open={confirmDisconnect}
+        title="Disconnect Strava?"
+        message="This revokes Jejact's access to your Strava account and signs you out."
+        confirmLabel="Disconnect"
+        busy={busy}
+        onConfirm={() => void handleDisconnect()}
+        onCancel={() => setConfirmDisconnect(false)}
+      />
     </div>
   );
 }
