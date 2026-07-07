@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import type { SessionUser } from "@repo/types";
-import { seal, unseal } from "./crypto";
+import { seal, unseal, encryptString } from "./crypto";
 import { refreshAccessToken } from "./strava";
 
 export const SESSION_COOKIE = "jejact_session";
@@ -65,6 +65,20 @@ export async function getSession(): Promise<SessionData | null> {
       expiresAt: refreshed.expires_at,
     };
     await writeSession(next);
+    
+    // Also update tokens in database if available
+    try {
+      const { updateUserTokens } = await import("@repo/database");
+      await updateUserTokens(
+        session.athlete.id,
+        encryptString(next.accessToken),
+        encryptString(next.refreshToken),
+        next.expiresAt,
+      );
+    } catch {
+      // Ignore DB errors during background refresh, the cookie is updated anyway
+    }
+    
     return next;
   } catch {
     await clearSession();

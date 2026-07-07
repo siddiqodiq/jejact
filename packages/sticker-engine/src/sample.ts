@@ -28,4 +28,9 @@ export const SAMPLE_ACTIVITY: StickerData = {
   averageHeartrateBpm: 152,
   calories: 861,
   mapPolyline: sampleRoute(),
+  splits: [
+    352, 348, 341, 345, 338, 331, 334, 328, 330, 322, 318, 309,
+  ]
+    .map((seconds) => ({ distanceMeters: 1000, movingTimeSeconds: seconds }))
+    .concat([{ distanceMeters: 480, movingTimeSeconds: 216 }]),
 };

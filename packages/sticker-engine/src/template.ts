@@ -1,5 +1,11 @@
 import type { StatField } from "@repo/types";
 
+/** One per-km split, for splits-based templates. */
+export interface StickerSplit {
+  distanceMeters: number;
+  movingTimeSeconds: number;
+}
+
 /**
  * Minimal activity data a sticker needs. Decoupled from the API DTO so the
  * engine can render sample data (landing page, template gallery) too.
@@ -17,6 +23,8 @@ export interface StickerData {
   calories: number | null;
   /** Strava encoded polyline of the route, when the activity has one. */
   mapPolyline?: string | null;
+  /** Per-km splits, when the detailed activity has been fetched. */
+  splits?: StickerSplit[] | null;
 }
 
 export type TextAlign = "left" | "center" | "right";
@@ -146,6 +154,69 @@ export interface ReceiptElement {
   width: number;
 }
 
+/**
+ * WhatsApp-style outgoing chat bubble: enabled stats as the message text,
+ * clock time + blue double check inside the bubble (own fixed palette).
+ */
+export interface ChatBubbleElement {
+  type: "chatBubble";
+  x: number;
+  y: number;
+  width: number;
+}
+
+/**
+ * Push-notification card with the athlete's avatar (drawn from
+ * RenderOptions.avatar when provided, initial-letter tile otherwise),
+ * activity name as title and stats as the body (own fixed palette).
+ */
+export interface NotifBubbleElement {
+  type: "notifBubble";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * "1.67 kilometers ✔" — one stat spelled out, followed by a blue
+ * verified seal. Text follows the user color; the seal stays blue.
+ */
+export interface VerifiedElement {
+  type: "verified";
+  field: StatField;
+  x: number;
+  y: number;
+  width: number;
+  fontSize: number;
+  align?: TextAlign;
+}
+
+/**
+ * Terminal window: `$ run_stats --latest` prompt followed by one
+ * key/value line per enabled stat (own fixed palette, monospace).
+ * Height adapts to the number of enabled stats.
+ */
+export interface TerminalElement {
+  type: "terminal";
+  x: number;
+  y: number;
+  width: number;
+}
+
+/**
+ * Horizontal per-km pace bars from the activity's splits. Bar length is
+ * proportional to speed; the fastest split is drawn at full opacity.
+ * Skipped when the activity has fewer than two splits.
+ */
+export interface SplitsBarElement {
+  type: "splitsBar";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface DividerElement {
   type: "divider";
   x: number;
@@ -163,6 +234,11 @@ export type TemplateElement =
   | StatementElement
   | NotificationElement
   | ReceiptElement
+  | ChatBubbleElement
+  | NotifBubbleElement
+  | VerifiedElement
+  | TerminalElement
+  | SplitsBarElement
   | DividerElement;
 
 export interface StickerTemplate {

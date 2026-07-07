@@ -2,6 +2,7 @@ import type {
   ActivitiesResponse,
   ActivityDto,
   SessionUser,
+  SyncResponse,
 } from "@repo/types";
 
 export class ApiError extends Error {
@@ -41,4 +42,5 @@ export const api = {
   logout: () => request<{ ok: true }>("/api/auth/logout", { method: "POST" }),
   disconnectStrava: () =>
     request<{ ok: true }>("/api/me/strava", { method: "DELETE" }),
+  sync: () => request<SyncResponse>("/api/sync", { method: "POST" }),
 };

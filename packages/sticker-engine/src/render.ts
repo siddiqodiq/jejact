@@ -6,6 +6,13 @@ import {
   type FormattedStat,
 } from "./format";
 import { drawNotification, drawReceipt, drawStatement } from "./cards";
+import {
+  drawChatBubble,
+  drawNotifBubble,
+  drawSplitsBar,
+  drawTerminal,
+  drawVerified,
+} from "./objects";
 import { decodePolyline } from "./polyline";
 import type {
   BoxElement,
@@ -27,6 +34,11 @@ export interface RenderOptions {
   fontFamily?: string;
   /** Multiplier on top of template dimensions (1 = 1080px-class export). */
   pixelRatio?: number;
+  /**
+   * Athlete avatar for templates that show it (notifBubble). Must be
+   * same-origin or CORS-clean, otherwise the canvas taints and export breaks.
+   */
+  avatar?: CanvasImageSource | null;
 }
 
 const DEFAULT_FONT =
@@ -488,6 +500,26 @@ export function renderSticker(
         break;
       case "receipt":
         drawReceipt(ctx, el, data, options.fields);
+        ctx.fillStyle = options.textColor;
+        break;
+      case "chatBubble":
+        drawChatBubble(ctx, el, data, options.fields, c.font);
+        ctx.fillStyle = options.textColor;
+        break;
+      case "notifBubble":
+        drawNotifBubble(ctx, el, data, options.fields, c.font, options.avatar);
+        ctx.fillStyle = options.textColor;
+        break;
+      case "verified":
+        drawVerified(ctx, el, data, options.fields, c.color, c.font);
+        ctx.fillStyle = options.textColor;
+        break;
+      case "terminal":
+        drawTerminal(ctx, el, data, options.fields);
+        ctx.fillStyle = options.textColor;
+        break;
+      case "splitsBar":
+        drawSplitsBar(ctx, el, data, c.color, c.font);
         ctx.fillStyle = options.textColor;
         break;
       case "divider":

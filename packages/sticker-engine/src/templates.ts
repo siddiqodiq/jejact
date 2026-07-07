@@ -155,6 +155,54 @@ export const BUILT_IN_TEMPLATES: StickerTemplate[] = [
     elements: [{ type: "receipt", x: 50, y: 30, width: 620 }],
   },
   {
+    id: "chat",
+    name: "Chat",
+    description: "Your stats as a chat bubble — read receipt included.",
+    width: 1000,
+    height: 280,
+    fixedPalette: true,
+    elements: [{ type: "chatBubble", x: 30, y: 40, width: 940 }],
+  },
+  {
+    id: "ping",
+    name: "Ping",
+    description: "A push notification starring your profile photo.",
+    width: 1080,
+    height: 360,
+    fixedPalette: true,
+    elements: [{ type: "notifBubble", x: 40, y: 36, width: 1000, height: 280 }],
+  },
+  {
+    id: "verified",
+    name: "Verified",
+    description: "Your distance, officially blue-checked.",
+    width: 1080,
+    height: 260,
+    elements: [
+      { type: "verified", field: "distance", x: 60, y: 66, width: 960, fontSize: 116, align: "center" },
+    ],
+  },
+  {
+    id: "terminal",
+    name: "Terminal",
+    description: "Stats straight from the command line.",
+    width: 800,
+    height: 660,
+    fixedPalette: true,
+    elements: [{ type: "terminal", x: 40, y: 30, width: 720 }],
+  },
+  {
+    id: "splits",
+    name: "Splits",
+    description: "Per-kilometer pace, bar by bar.",
+    width: 900,
+    height: 760,
+    elements: [
+      { type: "text", literal: "PACE SPLITS", x: 60, y: 48, fontSize: 30, fontWeight: 600, uppercase: true, letterSpacing: 0.18, opacity: 0.65 },
+      { type: "splitsBar", x: 60, y: 128, width: 780, height: 580 },
+    ],
+  },
+  {
     id: "duo",
     name: "Duo",
     description: "Distance and pace, sharing the spotlight.",
@@ -176,4 +224,9 @@ export function getTemplate(id: string): StickerTemplate | undefined {
 /** True when the template draws the GPS route (needs a polyline). */
 export function templateUsesRoute(template: StickerTemplate): boolean {
   return template.elements.some((el) => el.type === "route");
+}
+
+/** True when the template draws per-km splits (needs detailed activity data). */
+export function templateUsesSplits(template: StickerTemplate): boolean {
+  return template.elements.some((el) => el.type === "splitsBar");
 }

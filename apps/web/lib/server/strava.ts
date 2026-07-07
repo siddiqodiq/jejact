@@ -87,6 +87,11 @@ export function toActivityDto(activity: StravaActivity): ActivityDto {
     calories: activity.calories ?? null,
     mapPolyline:
       activity.map?.summary_polyline ?? activity.map?.polyline ?? null,
+    splits:
+      activity.splits_metric?.map((s) => ({
+        distanceMeters: s.distance,
+        movingTimeSeconds: s.moving_time,
+      })) ?? null,
   };
 }
 

@@ -35,6 +35,16 @@ export const stravaActivitySchema = z
     average_speed: z.number().nullish(),
     average_heartrate: z.number().nullish(),
     calories: z.number().nullish(), // only present on detailed activity
+    splits_metric: z // only present on detailed activity
+      .array(
+        z
+          .object({
+            distance: z.number(),
+            moving_time: z.number(),
+          })
+          .passthrough(),
+      )
+      .nullish(),
     map: z
       .object({
         summary_polyline: z.string().nullish(),

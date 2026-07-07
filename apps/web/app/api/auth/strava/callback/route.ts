@@ -40,10 +40,31 @@ export async function GET(request: NextRequest) {
         id: String(athlete.id),
         firstName: athlete.firstname ?? "",
         lastName: athlete.lastname ?? "",
-        avatarUrl: athlete.profile_medium ?? athlete.profile ?? null,
+        // `profile` is the large rendition — crisper on 1080px stickers.
+        avatarUrl: athlete.profile ?? athlete.profile_medium ?? null,
       },
     };
     await writeSession(session);
+
+    try {
+      const { upsertUser } = await import("@repo/database");
+      const { encryptString } = await import("../../../../../lib/server/crypto");
+      const { syncRecentActivities } = await import("../../../../../lib/server/sync");
+      
+      await upsertUser({
+        id: session.athlete.id,
+        firstName: session.athlete.firstName,
+        lastName: session.athlete.lastName,
+        avatarUrl: session.athlete.avatarUrl,
+        encryptedAccessToken: encryptString(session.accessToken),
+        encryptedRefreshToken: encryptString(session.refreshToken),
+        tokenExpiresAt: session.expiresAt,
+      });
+
+      await syncRecentActivities(session.athlete.id, session.accessToken);
+    } catch (e) {
+      console.error("Failed to sync on login", e);
+    }
 
     const response = NextResponse.redirect(`${origin}/dashboard`);
     response.cookies.delete(OAUTH_STATE_COOKIE);

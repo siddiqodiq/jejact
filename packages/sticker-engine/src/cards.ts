@@ -19,7 +19,7 @@ export const MONO_FONT =
 export const SERIF_FONT =
   "Georgia, 'Iowan Old Style', 'Times New Roman', serif";
 
-const HIGHLIGHT = "#ffc120";
+export const HIGHLIGHT = "#ffc120";
 const INK_ON_HIGHLIGHT = "#181410";
 
 /* ---------------------------------------------------------------- */
@@ -144,7 +144,7 @@ export function drawStatement(
 const CARD_INK = "#161412";
 const CARD_MUTED = "#8d8d93";
 
-function roundedPath(
+export function roundedPath(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -161,7 +161,7 @@ function roundedPath(
   ctx.closePath();
 }
 
-function tracked(
+export function tracked(
   ctx: CanvasRenderingContext2D,
   text: string,
   x: number,
@@ -180,7 +180,7 @@ function tracked(
   }
 }
 
-function ellipsizeText(
+export function ellipsizeText(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidth: number,

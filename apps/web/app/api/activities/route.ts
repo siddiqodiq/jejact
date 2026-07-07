@@ -1,22 +1,20 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import type { ActivitiesResponse } from "@repo/types";
 import { getSession } from "../../../lib/server/session";
 import { fromStravaError, unauthorized } from "../../../lib/server/responses";
-import {
-  fetchRecentActivities,
-  toActivityDto,
-} from "../../../lib/server/strava";
+import { getActivities, getLastSyncedAt } from "@repo/database";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const session = await getSession();
   if (!session) return unauthorized();
 
-  const page = Number(request.nextUrl.searchParams.get("page") ?? "1") || 1;
-
   try {
-    const activities = await fetchRecentActivities(session.accessToken, page);
+    const activities = await getActivities(session.athlete.id);
+    const lastSyncedAt = await getLastSyncedAt(session.athlete.id);
+    
     return NextResponse.json<ActivitiesResponse>({
-      activities: activities.map(toActivityDto),
+      activities,
+      lastSyncedAt,
     });
   } catch (error) {
     return fromStravaError(error);

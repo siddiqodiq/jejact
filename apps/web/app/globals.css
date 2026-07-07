@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* Instagram Sans for the "Verified" sticker template. Drop the font file at
+   public/fonts/InstagramSans-Regular.woff2 (from Meta's brand resources);
+   until then the canvas falls back to the page font. */
+@font-face {
+  font-family: "Instagram Sans";
+  src: url("/fonts/InstagramSans-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ---- Jejact design tokens -------------------------------------------- */
 
 :root {

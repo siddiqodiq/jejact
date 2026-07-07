@@ -100,7 +100,7 @@ jejact/
 │   ├── validation/
 │   ├── sticker-engine/
 │   └── config/
-└── docker-compose.yml
+
 ```
 
 Pisahkan frontend, API, dan worker agar mudah melakukan horizontal scaling di masa depan.

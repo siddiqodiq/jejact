@@ -20,7 +20,8 @@ const RIDE_SPORTS = new Set([
   "Velomobile",
 ]);
 
-function isRide(sportType: string): boolean {
+/** True for cycling sports, where speed (km/h) beats pace (min/km). */
+export function isRideSport(sportType: string): boolean {
   return RIDE_SPORTS.has(sportType);
 }
 
@@ -41,7 +42,7 @@ export function formatDuration(seconds: number): FormattedStat {
 
 /** Pace for foot sports (min/km), average speed for rides (km/h). */
 export function formatPace(data: StickerData): FormattedStat {
-  if (isRide(data.sportType)) {
+  if (isRideSport(data.sportType)) {
     const mps =
       data.averageSpeedMps ??
       (data.movingTimeSeconds > 0

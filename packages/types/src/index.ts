@@ -19,6 +19,12 @@ export interface SessionUser {
   avatarUrl: string | null;
 }
 
+/** One metric (per-km) split of an activity. */
+export interface ActivitySplit {
+  distanceMeters: number;
+  movingTimeSeconds: number;
+}
+
 /** Normalized Strava activity as exposed to the frontend. */
 export interface ActivityDto {
   /** Strava activity id (stringified). */
@@ -35,13 +41,24 @@ export interface ActivityDto {
   /** Only present after fetching the detailed activity. */
   calories: number | null;
   mapPolyline: string | null;
+  /**
+   * Per-km splits. Only present after fetching the detailed activity:
+   * null = never fetched, [] = fetched but the activity has none.
+   */
+  splits: ActivitySplit[] | null;
 }
 
 export interface ActivitiesResponse {
   activities: ActivityDto[];
+  lastSyncedAt?: string | null; // ISO
 }
 
 export interface ApiErrorBody {
   statusCode: number;
   message: string;
+}
+
+export interface SyncResponse {
+  synced: number;
+  lastSyncedAt: string; // ISO
 }

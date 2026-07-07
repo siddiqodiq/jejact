@@ -11,9 +11,11 @@
     "check-types": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@repo/database": "workspace:*",
     "@repo/sticker-engine": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/validation": "workspace:*",
+    "lucide-react": "^1.23.0",
     "next": "16.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Jejact turns Strava activities into transparent PNG stickers for Instagram Stories. See `brief.md` for the original product brief. The architecture deliberately deviates from the brief's NestJS/Prisma stack: it is a **single Next.js app with no database**, designed to deploy straight to Vercel.
+Jejact turns Strava activities into transparent PNG stickers for Instagram Stories. See `brief.md` for the original product brief. The architecture deliberately deviates from the brief's NestJS/Prisma stack: it is a **Next.js app**, designed to deploy straight to Vercel, now using **Supabase PostgreSQL** purely as a caching layer to minimize Strava API calls.
 
 ## Commands
 
@@ -26,17 +26,16 @@ Turborepo + pnpm workspace. Shared packages export **TypeScript source directly*
 - `packages/types` — DTOs shared between route handlers and client (`ActivityDto`, `SessionUser`, `StatField`).
 - `packages/validation` — Zod schemas for Strava API responses.
 - `packages/ui`, `eslint-config`, `typescript-config` — starter leftovers/config; app components live in `apps/web/components`, not `@repo/ui`.
+- `packages/database` — Encapsulates Supabase PostgreSQL access.
 
-### Stateless auth (the key design decision)
+### Hybrid Auth & Caching (the key design decision)
 
-There is **no server-side storage**. `apps/web/lib/server/`:
-
-- `session.ts` — Strava access/refresh tokens + athlete profile are sealed into an httpOnly cookie (`jejact_session`). `getSession()` transparently refreshes the Strava token when it expires within 5 minutes and rewrites the cookie (only legal in Route Handlers — don't call it from Server Components that render).
-- `crypto.ts` — AES-256-GCM seal/unseal keyed off `SESSION_SECRET`.
-- `strava.ts` — Strava OAuth + API calls; `toActivityDto` normalizes snake_case Strava payloads. Activity ids are Strava ids (stringified), used directly in routes like `/studio/[id]`.
-- OAuth callback redirect URI derives from the request origin (works on localhost and Vercel previews); `APP_URL` env optionally overrides it.
-
-API routes under `app/api/` return `ApiErrorBody` JSON on failure; the client wrapper (`lib/api.ts`) throws `ApiError`, and pages redirect to `/` on 401. Calories only exist on the detailed activity endpoint (`GET /api/activities/[id]`), not the list.
+There is **no heavy backend storage** for user-generated content, but we use Supabase to cache Strava data:
+- `apps/web/lib/server/session.ts` — Strava access/refresh tokens + athlete profile are sealed into an httpOnly cookie (`jejact_session`). `getSession()` transparently refreshes the Strava token when it expires within 5 minutes, rewrites the cookie, and updates the database.
+- Tokens are **also** stored in the `users` table in Supabase, encrypted using `SESSION_SECRET` via AES-256-GCM. This future-proofs the app for background syncs.
+- `apps/web/lib/server/strava.ts` — Strava OAuth + API calls; `toActivityDto` normalizes snake_case Strava payloads.
+- **Caching**: The dashboard reads from Supabase `activities` table. The Strava API is only called on initial login, when the user explicitly clicks "Sync", or when an activity detail (calories) is requested for the first time.
+- API routes under `app/api/` return `ApiErrorBody` JSON on failure; the client wrapper (`lib/api.ts`) throws `ApiError`, and pages redirect to `/` on 401.
 
 ### Rendering flow
 

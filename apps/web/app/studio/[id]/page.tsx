@@ -3,7 +3,7 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ActivityDto, StatField } from "@repo/types";
+import type { ActivityDto, SessionUser, StatField } from "@repo/types";
 import {
   availableFields,
   BUILT_IN_TEMPLATES,
@@ -15,7 +15,9 @@ import {
   formatSportType,
   formatStat,
   shareSticker,
+  splitsAvailable,
   templateUsesRoute,
+  templateUsesSplits,
   type StickerData,
 } from "@repo/sticker-engine";
 import { api, ApiError } from "../../../lib/api";
@@ -52,6 +54,7 @@ export default function StudioPage({
   const router = useRouter();
 
   const [activity, setActivity] = useState<ActivityDto | null>(null);
+  const [user, setUser] = useState<SessionUser | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [templateId, setTemplateId] = useState(
     BUILT_IN_TEMPLATES[0]?.id ?? "",
@@ -79,6 +82,14 @@ export default function StudioPage({
       });
   }, [id, router]);
 
+  useEffect(() => {
+    // Avatar for templates that draw the profile photo — best-effort.
+    api
+      .me()
+      .then(setUser)
+      .catch(() => setUser(null));
+  }, []);
+
   const data = useMemo(
     () => (activity ? toStickerData(activity) : null),
     [activity],
@@ -87,14 +98,16 @@ export default function StudioPage({
     () => (data ? availableFields(data) : []),
     [data],
   );
-  // Route templates only make sense when the activity has GPS data.
-  const templates = useMemo(
-    () =>
-      data?.mapPolyline
-        ? BUILT_IN_TEMPLATES
-        : BUILT_IN_TEMPLATES.filter((t) => !templateUsesRoute(t)),
-    [data],
-  );
+  // Route/splits templates only make sense when the activity has the data.
+  const templates = useMemo(() => {
+    if (!data) return BUILT_IN_TEMPLATES;
+    const hasSplits = splitsAvailable(data);
+    return BUILT_IN_TEMPLATES.filter(
+      (t) =>
+        (data.mapPolyline || !templateUsesRoute(t)) &&
+        (hasSplits || !templateUsesSplits(t)),
+    );
+  }, [data]);
   const template = useMemo(
     () => templates.find((t) => t.id === templateId) ?? templates[0],
     [templates, templateId],
@@ -206,6 +219,7 @@ export default function StudioPage({
               data={data}
               fields={fields}
               textColor={textColor}
+              avatarUrl={user?.avatarUrl ? "/api/avatar" : null}
               canvasRef={(c) => {
                 canvasRef.current = c;
               }}
@@ -409,5 +423,6 @@ function toStickerData(activity: ActivityDto): StickerData {
     averageHeartrateBpm: activity.averageHeartrateBpm,
     calories: activity.calories,
     mapPolyline: activity.mapPolyline,
+    splits: activity.splits,
   };
 }

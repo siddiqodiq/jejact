@@ -12,13 +12,19 @@ import { Button } from "../../components/ui/button";
 type State =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; activities: ActivityDto[] };
+  | { status: "ready"; activities: ActivityDto[]; lastSyncedAt?: string | null };
 
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
   const [state, setState] = useState<State>({ status: "loading" });
   const [refreshing, setRefreshing] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   const load = useCallback(
     async (refresh: boolean) => {
@@ -26,7 +32,7 @@ export default function DashboardPage() {
         if (refresh) setRefreshing(true);
         const [me, data] = await Promise.all([api.me(), api.activities()]);
         setUser(me);
-        setState({ status: "ready", activities: data.activities });
+        setState({ status: "ready", activities: data.activities, lastSyncedAt: data.lastSyncedAt });
       } catch (error) {
         if (error instanceof ApiError && error.unauthorized) {
           router.replace("/");
@@ -38,11 +44,26 @@ export default function DashboardPage() {
             error instanceof Error ? error.message : "Something went wrong",
         });
       } finally {
-        setRefreshing(false);
+        if (refresh) setRefreshing(false);
       }
     },
     [router],
   );
+
+  const handleSync = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await api.sync();
+      await load(false);
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 429) {
+        showToast(error.message);
+      } else {
+        showToast("Sync failed");
+      }
+      setRefreshing(false);
+    }
+  }, [load, showToast]);
 
   useEffect(() => {
     void load(false);
@@ -59,16 +80,21 @@ export default function DashboardPage() {
             </h1>
             <p className="mt-1 text-sm text-ink-secondary">
               Pick one to turn it into a sticker.
+              {state.status === "ready" && state.lastSyncedAt && (
+                <span className="ml-2 border-l border-hairline pl-2">
+                  Last synced: {formatRelativeTime(state.lastSyncedAt)}
+                </span>
+              )}
             </p>
           </div>
           {state.status === "ready" ? (
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => void load(true)}
+              onClick={() => void handleSync()}
               disabled={refreshing}
             >
-              {refreshing ? "Syncing…" : "Refresh"}
+              {refreshing ? "Syncing…" : "↻ Sync"}
             </Button>
           ) : null}
         </div>
@@ -113,8 +139,29 @@ export default function DashboardPage() {
           )
         ) : null}
       </main>
+      {/* Toast */}
+      <div
+        aria-live="polite"
+        className={`fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-canvas shadow-lg transition-all duration-300 ${
+          toast ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
+        }`}
+      >
+        {toast}
+      </div>
     </div>
   );
+}
+
+function formatRelativeTime(isoString: string): string {
+  const diff = Date.now() - new Date(isoString).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes === 1) return "1 min ago";
+  if (minutes < 60) return `${minutes} mins ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return "1 hour ago";
+  if (hours < 24) return `${hours} hours ago`;
+  return new Date(isoString).toLocaleDateString();
 }
 
 function EmptyState({
