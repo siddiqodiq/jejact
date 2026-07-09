@@ -84,6 +84,11 @@ export function toActivityDto(activity: StravaActivity): ActivityDto {
     elevationGainMeters: activity.total_elevation_gain,
     averageSpeedMps: activity.average_speed ?? null,
     averageHeartrateBpm: activity.average_heartrate ?? null,
+    location:
+      activity.location_city ??
+      activity.location_state ??
+      activity.location_country ??
+      null,
     calories: activity.calories ?? null,
     mapPolyline:
       activity.map?.summary_polyline ?? activity.map?.polyline ?? null,

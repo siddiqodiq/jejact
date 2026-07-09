@@ -38,6 +38,12 @@ export interface ActivityDto {
   elevationGainMeters: number;
   averageSpeedMps: number | null;
   averageHeartrateBpm: number | null;
+  /**
+   * Where the activity happened (city-level). From Strava when set,
+   * otherwise reverse-geocoded from the route's start point:
+   * null = not looked up yet, "" = known to have none.
+   */
+  location: string | null;
   /** Only present after fetching the detailed activity. */
   calories: number | null;
   mapPolyline: string | null;

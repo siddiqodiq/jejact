@@ -15,6 +15,7 @@ export interface DbActivity {
   elevation_gain_meters: number;
   average_speed_mps: number | null;
   average_heartrate_bpm: number | null;
+  location: string | null;
   calories: number | null;
   map_polyline: string | null;
   splits: ActivitySplit[] | null;
@@ -68,6 +69,7 @@ export async function upsertActivities(userId: string, activities: ActivityDto[]
     elevation_gain_meters: a.elevationGainMeters,
     average_speed_mps: a.averageSpeedMps,
     average_heartrate_bpm: a.averageHeartrateBpm,
+    location: a.location,
     calories: a.calories,
     map_polyline: a.mapPolyline,
     splits: a.splits,
@@ -88,6 +90,7 @@ export async function updateActivityDetail(userId: string, activity: ActivityDto
     .update({
       calories: activity.calories,
       splits: activity.splits,
+      location: activity.location,
       has_detail: true,
       updated_at: new Date().toISOString(),
     })
@@ -111,6 +114,7 @@ function mapToDto(row: DbActivity): ActivityDto {
     elevationGainMeters: row.elevation_gain_meters,
     averageSpeedMps: row.average_speed_mps,
     averageHeartrateBpm: row.average_heartrate_bpm,
+    location: row.location ?? null,
     calories: row.calories,
     mapPolyline: row.map_polyline,
     splits: row.splits ?? null,

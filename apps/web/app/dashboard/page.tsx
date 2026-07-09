@@ -61,6 +61,7 @@ export default function DashboardPage() {
       } else {
         showToast("Sync failed");
       }
+    } finally {
       setRefreshing(false);
     }
   }, [load, showToast]);

@@ -9,6 +9,7 @@ import {
   fetchActivityDetail,
   toActivityDto,
 } from "../../../../lib/server/strava";
+import { reverseGeocodeStart } from "../../../../lib/server/geocode";
 import { getActivity, updateActivityDetail } from "@repo/database";
 
 export async function GET(
@@ -24,9 +25,14 @@ export async function GET(
   try {
     const { activity, hasDetail } = await getActivity(session.athlete.id, id);
 
-    // splits === null means the detail was cached before splits existed —
-    // refetch once so older cache rows pick them up.
-    if (activity && hasDetail && activity.splits !== null) {
+    // null splits/location mean the detail was cached before those fields
+    // existed (or a lookup failed) — refetch once so the cache heals.
+    if (
+      activity &&
+      hasDetail &&
+      activity.splits !== null &&
+      activity.location !== null
+    ) {
       return NextResponse.json(activity);
     }
 
@@ -36,6 +42,12 @@ export async function GET(
     const dto = toActivityDto(stravaActivity);
     // Distinguish "fetched, none" from "never fetched" in the cache.
     dto.splits ??= [];
+    // Strava stopped populating its location fields years ago — fall back
+    // to reverse-geocoding the route's start point ("" = known to have
+    // none, null = lookup failed, retry on the next open).
+    if (!dto.location) {
+      dto.location = await reverseGeocodeStart(dto.mapPolyline);
+    }
 
     // Update cache if the activity is already in the DB
     if (activity) {

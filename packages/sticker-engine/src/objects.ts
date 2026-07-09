@@ -178,17 +178,20 @@ export function drawNotifBubble(
   ctx.fill();
   ctx.restore();
 
-  // avatar (Strava profile photo, or initial-letter tile as fallback)
-  const av = h - pad * 2;
+  // avatar (Strava profile photo, or initial-letter tile as fallback) —
+  // half the card height, vertically centered, so it sits flush with the
+  // three text lines instead of dominating the card.
+  const av = h * 0.56;
+  const avY = y + (h - av) / 2;
   ctx.save();
-  roundedPath(ctx, x + pad, y + pad, av, av, av * 0.28);
+  roundedPath(ctx, x + pad, avY, av, av, av * 0.28);
   if (avatar) {
     ctx.clip();
-    // Strava caps avatars at 124px; smooth the ~1.7× upscale as well as
-    // the browser can.
+    // Strava caps avatars at 124px; smooth the upscale as well as the
+    // browser can.
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(avatar, x + pad, y + pad, av, av);
+    ctx.drawImage(avatar, x + pad, avY, av, av);
   } else {
     ctx.fillStyle = NOTIF_TILE;
     ctx.fill();
@@ -196,16 +199,18 @@ export function drawNotifBubble(
     ctx.font = `700 ${av * 0.5}px ${font}`;
     const letter = (data.name.trim()[0] ?? "J").toUpperCase();
     const lw = ctx.measureText(letter).width;
-    ctx.fillText(letter, x + pad + (av - lw) / 2, y + pad + av * 0.66);
+    ctx.fillText(letter, x + pad + (av - lw) / 2, avY + av * 0.66);
   }
   ctx.restore();
 
-  const textX = x + pad + av + pad * 0.8;
+  const textX = x + pad + av + pad * 0.85;
   const rightX = x + w - pad;
-  // Tight three-line block, vertically centered on the avatar.
-  const titleY = y + pad + av * 0.33;
-  const bodyY = y + pad + av * 0.57;
-  const secondaryY = y + pad + av * 0.78;
+  // Baselines pinned to the avatar's span: title caps align with its top
+  // edge, the secondary line bottoms out at its bottom edge. Type is sized
+  // up so the tighter leading still fills the same span.
+  const titleY = avY + av * 0.223;
+  const bodyY = titleY + av * 0.382;
+  const secondaryY = bodyY + av * 0.352;
 
   // title row: activity name + clock time
   const time = formatClockTime(data.startDate);
@@ -216,7 +221,7 @@ export function drawNotifBubble(
   ctx.fillText(time, rightX - timeW, titleY);
 
   ctx.fillStyle = NOTIF_INK;
-  ctx.font = `800 ${h * 0.15}px ${font}`;
+  ctx.font = `800 ${h * 0.165}px ${font}`;
   ctx.fillText(
     ellipsizeText(ctx, data.name, rightX - textX - timeW - 24),
     textX,
@@ -231,7 +236,7 @@ export function drawNotifBubble(
   if (distance) primary.push(statText(distance));
   if (duration) primary.push(`in ${statText(duration)}`);
   if (pace) primary.push(`at ${statText(pace)}`);
-  ctx.font = `600 ${h * 0.122}px ${font}`;
+  ctx.font = `600 ${h * 0.132}px ${font}`;
   ctx.fillText(
     ellipsizeText(
       ctx,
@@ -242,15 +247,15 @@ export function drawNotifBubble(
     bodyY,
   );
 
-  // secondary line: leftover stats + sport type
+  // secondary line: leftover stats + location (sport type as fallback)
   const secondary = fields
     .filter((f) => f === "heartRate" || f === "calories" || f === "elevation")
     .map((f) => formatStat(f, data))
     .filter((s): s is FormattedStat => s !== null)
     .map(statText);
-  secondary.push(formatSportType(data.sportType));
+  secondary.push(data.location || formatSportType(data.sportType));
   ctx.fillStyle = NOTIF_MUTED;
-  ctx.font = `600 ${h * 0.108}px ${font}`;
+  ctx.font = `600 ${h * 0.116}px ${font}`;
   ctx.fillText(
     ellipsizeText(ctx, secondary.join(" · "), rightX - textX),
     textX,

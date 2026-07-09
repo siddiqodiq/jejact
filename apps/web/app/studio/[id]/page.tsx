@@ -424,5 +424,6 @@ function toStickerData(activity: ActivityDto): StickerData {
     calories: activity.calories,
     mapPolyline: activity.mapPolyline,
     splits: activity.splits,
+    location: activity.location,
   };
 }

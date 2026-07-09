@@ -25,6 +25,8 @@ export interface StickerData {
   mapPolyline?: string | null;
   /** Per-km splits, when the detailed activity has been fetched. */
   splits?: StickerSplit[] | null;
+  /** City-level location, when known. */
+  location?: string | null;
 }
 
 export type TextAlign = "left" | "center" | "right";
