@@ -7,16 +7,20 @@ import {
 } from "@repo/sticker-engine";
 import { StickerCanvas } from "./sticker-canvas";
 
-const ROTATION = ["receipt", "trace", "glass-card"];
+/**
+ * Object stickers with their own palettes — legible on the checkerboard
+ * in both color schemes, and the most "Jejact" templates we have.
+ */
+const ROTATION = ["chat", "receipt", "terminal", "ping"];
 
-/** Story-shaped mock with a live-rendered sticker cycling through templates. */
+/** Transparency checkerboard with a live sticker peeled onto it. */
 export function HeroSticker() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(
       () => setIndex((i) => (i + 1) % ROTATION.length),
-      3500,
+      3200,
     );
     return () => clearInterval(timer);
   }, []);
@@ -27,24 +31,22 @@ export function HeroSticker() {
   if (!template) return null;
 
   return (
-    <div className="mx-auto w-full max-w-[320px]">
-      <div className="story-backdrop elevated relative aspect-[9/16] w-full overflow-hidden rounded-[32px] border border-hairline p-5">
-        <div className="absolute left-5 top-4 flex gap-1">
-          <span className="h-0.5 w-10 rounded-full bg-white/80" />
-          <span className="h-0.5 w-10 rounded-full bg-white/30" />
-          <span className="h-0.5 w-10 rounded-full bg-white/30" />
-        </div>
-        <div className="flex h-full items-center justify-center">
-          <StickerCanvas
-            key={template.id}
-            template={template}
-            data={SAMPLE_ACTIVITY}
-            fields={["distance", "pace", "duration", "elevation"]}
-            textColor="#ffffff"
-            className="drop-shadow-lg transition-opacity duration-500"
-          />
-        </div>
+    <div className="mx-auto w-full max-w-[440px]">
+      <div className="transparency-grid relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-3xl border border-hairline p-6 sm:p-10">
+        <StickerCanvas
+          key={template.id}
+          template={template}
+          data={SAMPLE_ACTIVITY}
+          fields={["distance", "pace", "duration"]}
+          textColor="#ffffff"
+          className={`max-h-[300px] w-auto drop-shadow-xl sm:max-h-[340px] ${
+            index % 2 === 0 ? "-rotate-2" : "rotate-2"
+          }`}
+        />
       </div>
+      <p className="mt-3 text-center text-[13px] text-ink-faint">
+        Transparent PNG · rendered on your device · pasted on your Story
+      </p>
     </div>
   );
 }

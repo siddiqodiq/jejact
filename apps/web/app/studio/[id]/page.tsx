@@ -3,7 +3,7 @@
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { ActivityDto, SessionUser, StatField } from "@repo/types";
+import type { ActivityDto, StatField } from "@repo/types";
 import {
   availableFields,
   BUILT_IN_TEMPLATES,
@@ -21,6 +21,7 @@ import {
   type StickerData,
 } from "@repo/sticker-engine";
 import { api, ApiError } from "../../../lib/api";
+import { useSessionUser } from "../../../lib/use-session-user";
 import { StickerCanvas } from "../../../components/sticker-canvas";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { Button } from "../../../components/ui/button";
@@ -54,7 +55,7 @@ export default function StudioPage({
   const router = useRouter();
 
   const [activity, setActivity] = useState<ActivityDto | null>(null);
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const user = useSessionUser();
   const [error, setError] = useState<string | null>(null);
   const [templateId, setTemplateId] = useState(
     BUILT_IN_TEMPLATES[0]?.id ?? "",
@@ -81,14 +82,6 @@ export default function StudioPage({
         setError(err instanceof Error ? err.message : "Failed to load");
       });
   }, [id, router]);
-
-  useEffect(() => {
-    // Avatar for templates that draw the profile photo — best-effort.
-    api
-      .me()
-      .then(setUser)
-      .catch(() => setUser(null));
-  }, []);
 
   const data = useMemo(
     () => (activity ? toStickerData(activity) : null),
@@ -165,7 +158,7 @@ export default function StudioPage({
   if (error) {
     return (
       <Shell>
-        <div className="mx-auto mt-16 max-w-sm rounded-3xl bg-surface px-6 py-14 text-center">
+        <div className="mx-auto mt-16 max-w-sm rounded-3xl border border-hairline bg-surface px-6 py-14 text-center">
           <h1 className="text-lg font-semibold">Activity unavailable</h1>
           <p className="mt-2 text-sm text-ink-secondary">{error}</p>
           <Link
@@ -238,7 +231,7 @@ export default function StudioPage({
                     onClick={() => setTemplateId(t.id)}
                     className={`shrink-0 rounded-2xl border px-4 py-2.5 text-sm font-medium transition-all ${
                       t.id === template.id
-                        ? "border-accent bg-accent-soft text-accent"
+                        ? "border-ink bg-surface text-ink"
                         : "border-hairline bg-surface text-ink-secondary hover:text-ink"
                     }`}
                   >
@@ -296,7 +289,7 @@ export default function StudioPage({
                     title={name}
                     className={`size-9 rounded-full border-2 transition-transform active:scale-90 ${
                       textColor === value
-                        ? "border-accent scale-110"
+                        ? "border-ink scale-110"
                         : "border-hairline"
                     }`}
                     style={{ backgroundColor: value }}
@@ -321,7 +314,7 @@ export default function StudioPage({
       </main>
 
       {/* Mobile action bar */}
-      <div className="glass fixed inset-x-0 bottom-0 z-40 border-t border-hairline p-4 lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas p-4 lg:hidden">
         <div className="mx-auto flex max-w-md gap-2.5">
           <Actions
             busy={busy}
@@ -350,7 +343,7 @@ export default function StudioPage({
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh">
-      <header className="glass sticky top-0 z-40 border-b border-hairline">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-canvas">
         <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-5">
           <Logo href="/dashboard" />
           <span className="text-sm font-medium text-ink-secondary">

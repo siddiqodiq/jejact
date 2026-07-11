@@ -1,26 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { SessionUser } from "@repo/types";
 import { BUILT_IN_TEMPLATES, SAMPLE_ACTIVITY } from "@repo/sticker-engine";
-import { api } from "../../lib/api";
+import { useSessionUser } from "../../lib/use-session-user";
 import { SiteHeader } from "../../components/site-header";
 import { StickerCanvas } from "../../components/sticker-canvas";
 
 export default function TemplatesPage() {
-  const [user, setUser] = useState<SessionUser | null>(null);
-
-  useEffect(() => {
-    api
-      .me()
-      .then(setUser)
-      .catch(() => setUser(null));
-  }, []);
+  const user = useSessionUser();
 
   return (
     <div className="min-h-dvh">
-      <SiteHeader user={user} />
+      <SiteHeader />
       <main className="mx-auto max-w-5xl px-5 py-8">
         <h1 className="text-2xl font-bold tracking-tight">Template gallery</h1>
         <p className="mt-1 text-sm text-ink-secondary">

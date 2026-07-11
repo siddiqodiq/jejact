@@ -17,9 +17,9 @@ export function ActivityCard({ activity }: { activity: ActivityDto }) {
   return (
     <Link
       href={`/studio/${activity.id}`}
-      className="group flex items-center gap-4 rounded-3xl bg-surface p-4 transition-all duration-200 hover:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 sm:p-5"
+      className="group flex items-center gap-4 rounded-3xl border border-hairline bg-surface p-4 transition-colors duration-200 hover:border-ink-faint sm:p-5"
     >
-      <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+      <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-hairline bg-canvas text-ink-secondary">
         <SportIcon sportType={activity.sportType} className="size-5" />
       </div>
       <div className="min-w-0 flex-1">
@@ -36,7 +36,7 @@ export function ActivityCard({ activity }: { activity: ActivityDto }) {
       </div>
       <span
         aria-hidden
-        className="ml-1 text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-accent"
+        className="ml-1 text-ink-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-ink"
       >
         →
       </span>

@@ -17,12 +17,12 @@ export default async function LandingPage({
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="glass sticky top-0 z-40 border-b border-hairline">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-canvas">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
           <Logo />
           <a
             href="/api/auth/strava"
-            className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+            className="rounded-full bg-ink px-4 py-1.5 text-sm font-medium text-canvas transition-opacity hover:opacity-85"
           >
             Connect Strava
           </a>
@@ -39,7 +39,7 @@ export default async function LandingPage({
         {/* Hero */}
         <section className="mx-auto grid max-w-5xl items-center gap-14 px-6 pb-20 pt-16 sm:pt-24 lg:grid-cols-2">
           <div>
-            <p className="mb-4 inline-block rounded-full bg-accent-soft px-3.5 py-1 text-[13px] font-semibold text-accent">
+            <p className="mb-4 inline-block rounded-full border border-hairline bg-surface px-3.5 py-1 text-[13px] font-medium text-ink-secondary">
               For your Instagram Story
             </p>
             <h1 className="text-balance text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
@@ -55,7 +55,7 @@ export default async function LandingPage({
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <a
                 href="/api/auth/strava"
-                className="elevated inline-flex h-12 items-center rounded-full bg-accent px-7 text-[15px] font-medium text-white transition-all hover:bg-accent-hover active:scale-[0.98]"
+                className="inline-flex h-12 items-center rounded-full bg-ink px-7 text-[15px] font-medium text-canvas transition-all hover:opacity-85 active:scale-[0.98]"
               >
                 Connect with Strava
               </a>

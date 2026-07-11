@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { SessionUser } from "@repo/types";
-import { api, ApiError } from "../../lib/api";
+import { api } from "../../lib/api";
+import { useSessionUser } from "../../lib/use-session-user";
 import { SiteHeader } from "../../components/site-header";
 import { Button } from "../../components/ui/button";
 import { ConfirmDialog } from "../../components/ui/confirm-dialog";
@@ -11,20 +11,13 @@ import { Skeleton } from "../../components/ui/skeleton";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const user = useSessionUser();
   const [busy, setBusy] = useState(false);
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   useEffect(() => {
-    api
-      .me()
-      .then(setUser)
-      .catch((error: unknown) => {
-        if (error instanceof ApiError && error.unauthorized) {
-          router.replace("/");
-        }
-      });
-  }, [router]);
+    if (user === null) router.replace("/");
+  }, [user, router]);
 
   const handleLogout = async () => {
     setBusy(true);
@@ -49,7 +42,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-dvh">
-      <SiteHeader user={user} />
+      <SiteHeader />
       <main className="mx-auto max-w-xl px-5 py-8">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
 
@@ -61,7 +54,7 @@ export default function SettingsPage() {
         ) : (
           <div className="mt-6 space-y-4">
             {/* Profile */}
-            <section className="flex items-center gap-4 rounded-3xl bg-surface p-5">
+            <section className="flex items-center gap-4 rounded-3xl border border-hairline bg-surface p-5">
               {user.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- external Strava avatar host
                 <img
@@ -74,8 +67,8 @@ export default function SettingsPage() {
                   {user.firstName.charAt(0) || "?"}
                 </div>
               )}
-              <div>
-                <p className="font-semibold">
+              <div className="min-w-0">
+                <p className="truncate font-semibold">
                   {user.firstName} {user.lastName}
                 </p>
                 <p className="text-sm text-ink-secondary">
@@ -85,7 +78,7 @@ export default function SettingsPage() {
             </section>
 
             {/* Privacy */}
-            <section className="rounded-3xl bg-surface p-5">
+            <section className="rounded-3xl border border-hairline bg-surface p-5">
               <h2 className="font-semibold">Your data</h2>
               <p className="mt-1 text-sm leading-relaxed text-ink-secondary">
                 Jejact stores nothing on a server. Your Strava tokens live in
@@ -96,7 +89,7 @@ export default function SettingsPage() {
             </section>
 
             {/* Session */}
-            <section className="rounded-3xl bg-surface p-5">
+            <section className="rounded-3xl border border-hairline bg-surface p-5">
               <h2 className="font-semibold">Session</h2>
               <p className="mt-1 text-sm text-ink-secondary">
                 Log out keeps Jejact authorized on Strava; Disconnect also

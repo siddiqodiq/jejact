@@ -4,13 +4,13 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
-  primary:
-    "bg-accent text-white hover:bg-accent-hover active:scale-[0.98] elevated",
+  // Vercel-style: primary is monochrome (black on light, white on dark).
+  primary: "bg-ink text-canvas hover:opacity-85 active:scale-[0.98]",
   secondary:
     "bg-surface text-ink border border-hairline hover:border-ink-faint active:scale-[0.98]",
-  ghost: "text-ink-secondary hover:text-ink hover:bg-accent-soft/50",
+  ghost: "text-ink-secondary hover:text-ink hover:bg-surface",
   danger:
-    "bg-transparent text-red-500 border border-hairline hover:bg-red-500/10 active:scale-[0.98]",
+    "bg-transparent text-red-500 border border-hairline hover:border-red-500/60 active:scale-[0.98]",
 };
 
 const sizeClasses: Record<Size, string> = {

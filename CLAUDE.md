@@ -44,5 +44,5 @@ Pages are client components that fetch via `lib/api.ts`. `components/sticker-can
 ## Conventions
 
 - Design tokens are CSS custom properties in `app/globals.css` mapped through Tailwind v4 `@theme inline` (`bg-canvas`, `text-ink`, `text-ink-secondary`, `bg-accent`, `border-hairline`...). Dark mode flips via `prefers-color-scheme` on the same variables — style with semantic tokens, not raw colors or `dark:` variants.
-- UI is deliberately Apple-ish and minimal (rounded-3xl, glass header, one accent color). Avoid heavy gradients, card grids, and generic SaaS dashboard patterns — see the UI/UX section of `brief.md`.
+- UI is deliberately Vercel/Geist-ish and minimal: monochrome surfaces separated by hairline borders (not shadows), small radii (`rounded-3xl` is remapped to 12px in `globals.css`), monochrome primary buttons (`bg-ink text-canvas`), and one restrained blue accent used only for links/small highlights. Avoid heavy gradients and colored fills.
 - Strava tokens must never reach the client; anything importing `lib/server/*` stays server-side (enforced by `server-only`).

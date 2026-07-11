@@ -13,38 +13,37 @@
 
 /* ---- Jejact design tokens -------------------------------------------- */
 
+/* Vercel/Geist-inspired palette: monochrome surfaces separated by hairline
+   borders, one restrained blue accent. */
 :root {
-  --canvas: #f5f5f7;
+  --canvas: #fafafa;
   --surface: #ffffff;
-  --surface-glass: rgba(255, 255, 255, 0.72);
-  --ink: #1d1d1f;
-  --ink-secondary: #6e6e73;
-  --ink-faint: #aeaeb2;
-  --hairline: rgba(0, 0, 0, 0.08);
-  --accent: #e8532f;
-  --accent-hover: #d64827;
-  --accent-soft: rgba(232, 83, 47, 0.1);
+  --ink: #171717;
+  --ink-secondary: #666666;
+  --ink-faint: #999999;
+  --hairline: #eaeaea;
+  --accent: #0070f3;
+  --accent-hover: #0761d1;
+  --accent-soft: rgba(0, 112, 243, 0.08);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --canvas: #0b0b0d;
-    --surface: #1a1a1e;
-    --surface-glass: rgba(26, 26, 30, 0.72);
-    --ink: #f5f5f7;
-    --ink-secondary: #98989f;
-    --ink-faint: #5c5c63;
-    --hairline: rgba(255, 255, 255, 0.1);
-    --accent: #ff6b45;
-    --accent-hover: #ff7f5e;
-    --accent-soft: rgba(255, 107, 69, 0.14);
+    --canvas: #000000;
+    --surface: #0a0a0a;
+    --ink: #ededed;
+    --ink-secondary: #a1a1a1;
+    --ink-faint: #6e6e6e;
+    --hairline: #262626;
+    --accent: #3291ff;
+    --accent-hover: #52a8ff;
+    --accent-soft: rgba(50, 145, 255, 0.12);
   }
 }
 
 @theme inline {
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
-  --color-glass: var(--surface-glass);
   --color-ink: var(--ink);
   --color-ink-secondary: var(--ink-secondary);
   --color-ink-faint: var(--ink-faint);
@@ -57,9 +56,10 @@
     var(--font-geist-sans), Inter, -apple-system, "SF Pro Display", "Segoe UI",
     sans-serif;
 
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-3xl: 28px;
+  /* Tighter, Vercel-like corner radii (remaps every rounded-* in the app). */
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
 }
 
 /* ---- Base ------------------------------------------------------------- */
@@ -95,25 +95,14 @@ body {
     -10px 0;
 }
 
-/* Simulated Instagram-story photo backdrop for previews. */
+/* Flat dark panel behind sticker previews (stickers ship white text). */
 .story-backdrop {
-  background:
-    radial-gradient(120% 90% at 20% 10%, #3c4a5d 0%, transparent 60%),
-    radial-gradient(120% 100% at 85% 90%, #1f2a24 0%, transparent 65%),
-    linear-gradient(160deg, #2c3540 0%, #171b21 100%);
+  background: #0f0f10;
 }
 
-.glass {
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-}
-
-/* Soft, apple-ish elevation. */
+/* Barely-there elevation — Vercel separates with borders, not shadows. */
 .elevated {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .no-scrollbar::-webkit-scrollbar {
