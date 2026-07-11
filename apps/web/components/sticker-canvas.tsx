@@ -65,11 +65,17 @@ export function StickerCanvas({
     render();
     // Re-render once webfonts finish loading, otherwise first paint may
     // fall back to a system font. Canvas-only faces (Instagram Sans) are
-    // never requested by the DOM, so load them explicitly.
+    // never requested by the DOM, so load them explicitly — but only when
+    // the template actually draws them, to avoid pointless font requests.
+    const usesInstagramSans = template.elements.some(
+      (el) => el.type === "verified",
+    );
     let cancelled = false;
     void Promise.allSettled([
       document.fonts.ready,
-      document.fonts.load("400 32px 'Instagram Sans'"),
+      ...(usesInstagramSans
+        ? [document.fonts.load("400 32px 'Instagram Sans'")]
+        : []),
     ]).then(() => {
       if (!cancelled) render();
     });
